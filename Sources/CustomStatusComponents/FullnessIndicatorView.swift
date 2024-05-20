@@ -32,6 +32,7 @@ public struct FullnessIndicatorView: View {
     public var image: Image
     public var fullnessLevel: Float // Ranges from 0.0 to 1.0
     @Binding public var isPlusTapped: Bool
+    @State private var isPulsing = false
 
     private let spacing: CGFloat = 4
     private let imageSize: CGFloat = 14
@@ -66,7 +67,14 @@ public struct FullnessIndicatorView: View {
                     RoundedRectangle(cornerRadius: 2)
                         .fill(getBarColor(for: index))
                         .frame(width: barWidth, height: barHeight)
-                        .opacity(fullnessLevel == 0 && index == 0 ? animatePulsing() : 1)
+                        .opacity(fullnessLevel == 0 ? (isPulsing ? 0.5 : 1) : 1)
+                }
+            }
+            .onAppear {
+                if fullnessLevel == 0 {
+                    withAnimation(Animation.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
+                        isPulsing.toggle()
+                    }
                 }
             }
 
@@ -103,15 +111,6 @@ public struct FullnessIndicatorView: View {
         default:
             return .gray
         }
-    }
-    
-    private func animatePulsing() -> Double {
-        let animation = Animation.easeInOut(duration: 1).repeatForever(autoreverses: true)
-        var opacity: Double = 1
-        withAnimation(animation) {
-            opacity = 0
-        }
-        return opacity
     }
 }
 
