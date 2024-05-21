@@ -11,7 +11,7 @@ public struct PlusShape: Shape {
     public init() {}
 
     public func path(in rect: CGRect) -> Path {
-        let lineThickness: CGFloat = rect.width * 0.2
+        let lineThickness: CGFloat = rect.width * 0.3 // Increased thickness
         let halfLineThickness = lineThickness / 2
         let halfWidth = rect.width / 2
         let halfHeight = rect.height / 2
@@ -37,9 +37,9 @@ public struct FullnessIndicatorView: View {
     private let spacing: CGFloat = 4
     private let imageSize: CGFloat = 14
     private let strokeWidth: CGFloat = 1
-    private let barWidth: CGFloat = 3
-    private let barHeight: CGFloat = 7
-    private let plusButtonSize: CGFloat = 8
+    private let barWidth: CGFloat = 4 // Increased width
+    private let barHeight: CGFloat = 12 // Increased height
+    private let plusButtonSize: CGFloat = 10 // Increased size
     private let padding: CGFloat = 4
     private let strokeColor: Color = .gray
     private let backgroundColor: Color = .black
@@ -52,36 +52,36 @@ public struct FullnessIndicatorView: View {
     }
 
     public var body: some View {
-        HStack(spacing: spacing) {
-            // Profile Image
-            image
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: imageSize, height: imageSize)
-                .clipShape(Circle())
-                .overlay(Circle().stroke(strokeColor, lineWidth: strokeWidth))
+        Button(action: {
+            isPlusTapped.toggle()
+        }) {
+            HStack(spacing: spacing) {
+                // Profile Image
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: imageSize, height: imageSize)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(strokeColor, lineWidth: strokeWidth))
 
-            // Fullness Bars
-            HStack(spacing: 3) {
-                ForEach(0..<4) { index in
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(getBarColor(for: index))
-                        .frame(width: barWidth, height: barHeight)
-                        .opacity(fullnessLevel == 0 ? (isPulsing ? 0.5 : 1) : 1)
-                }
-            }
-            .onAppear {
-                if fullnessLevel == 0 {
-                    withAnimation(Animation.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
-                        isPulsing.toggle()
+                // Fullness Bars
+                HStack(spacing: 3) {
+                    ForEach(0..<4) { index in
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(getBarColor(for: index))
+                            .frame(width: barWidth, height: barHeight)
+                            .opacity(fullnessLevel == 0 ? (isPulsing ? 0.5 : 1) : 1)
                     }
                 }
-            }
+                .onAppear {
+                    if fullnessLevel == 0 {
+                        withAnimation(Animation.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
+                            isPulsing.toggle()
+                        }
+                    }
+                }
 
-            // Plus Button
-            Button(action: {
-                isPlusTapped.toggle()
-            }) {
+                // Plus Button
                 PlusShape()
                     .foregroundColor(.black)
                     .frame(width: plusButtonSize, height: plusButtonSize)
@@ -89,28 +89,30 @@ public struct FullnessIndicatorView: View {
                     .background(plusBackgroundColor)
                     .clipShape(Circle())
             }
+            .padding(padding)
+            .background(backgroundColor)
+            .clipShape(Capsule())
+            .overlay(Capsule().stroke(strokeColor, lineWidth: strokeWidth))
         }
-        .padding(padding)
-        .background(backgroundColor)
-        .clipShape(Capsule())
-        .overlay(Capsule().stroke(strokeColor, lineWidth: strokeWidth))
     }
     
     private func getBarColor(for index: Int) -> Color {
+        let numberOfBars: Int
         switch fullnessLevel {
         case 0:
-            return .red
+            return .white // Default color when level is 0
         case 0.01...0.25:
-            return index == 0 ? .red : .gray
+            numberOfBars = 1
         case 0.26...0.50:
-            return index < 2 ? .orange : .gray
+            numberOfBars = 2
         case 0.51...0.75:
-            return index < 3 ? .green : .gray
+            numberOfBars = 3
         case 0.76...1.0:
-            return .green
+            numberOfBars = 4
         default:
-            return .gray
+            numberOfBars = 0
         }
+        return index < numberOfBars ? .white : .gray
     }
 }
 
